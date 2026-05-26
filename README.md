@@ -1,66 +1,86 @@
-# Youth Mental Health in Washington State
+# Youth Mental Health Access Analysis — Washington State
 
-Over 126,000 children in Washington have a diagnosed mental health condition but receive no treatment. This project maps exactly where those gaps are and what's driving them.
+County-level analysis of youth mental health access gaps, provider shortages, and socioeconomic risk factors across all 39 Washington counties.
 
-**Author:** Waleed Adawi · **Year:** 2026
-**Stack:** Python 3 · pandas · matplotlib · seaborn
-**Data:** U.S. Census ACS · SAMHSA NSDUH · HRSA AHRF · CDC YRBSS/BRFSS · MHA · USDA RUCC
+**Author:** Waleed Adawi · **Year:** 2026  
+**Stack:** Python 3 · pandas · NumPy · Matplotlib · Seaborn
+
+---
 
 ## Overview
 
 ### The Problem
 
-Washington State ranks 48th nationally in youth mental health outcomes. 70.6% of caregivers report difficulty accessing care — nearly 16 points above the national average. But these numbers don't tell you *where* the problem is worst or *why* it varies so much from one county to the next.
+Rural and low-income communities in Washington State face disproportionate barriers to youth mental health care. Provider shortages, high uninsured rates among children, and poverty create compounding access gaps that vary dramatically from county to county.
 
 ### Why It Matters
 
-The state average masks deep regional inequality. A child in King County has access to 380 mental health providers per 100K residents. A child in Garfield County has access to 40. That's not a gap — it's a different reality. And it's not random: the counties with the fewest providers also tend to have the highest poverty rates and the lowest incomes. Understanding this pattern is the first step toward directing resources where they'll do the most good.
+Washington has 39 counties spanning dense urban centers like King County (2.3M residents, 380 MH providers per 100K) to remote rural areas like Garfield County (2,200 residents, 40 providers per 100K). Understanding where access breaks down — and what drives those gaps — is the first step toward equitable resource allocation.
 
 ### Objective
 
-Map youth mental health access, provider shortages, and socioeconomic risk factors across all 39 Washington counties to identify which communities are falling through the cracks — and what factors predict it.
+Quantify the relationships between socioeconomic indicators (income, poverty, insurance coverage) and mental health provider availability at the county level, identify the most underserved communities, and classify counties into risk profiles using unsupervised clustering.
+
+---
 
 ## Methodology
 
-This analysis follows a structured approach from data collection through recommendations:
+### Approach
 
-1. **Data collection** — Integrated 11 publicly available federal datasets covering insurance coverage, poverty, income, provider availability, demographics, and rural classification at the county level.
-2. **Data processing** — Standardized all variables to a common unit of analysis (county), aligned time periods (ACS 5-year estimates 2019–2023, NSDUH 2022–2023), and classified counties as rural or urban using USDA Rural-Urban Continuum Codes.
-3. **Exploratory data analysis** — Computed summary statistics and distributions across all 39 counties to understand the spread and identify outliers. Compared rural vs. urban counties across key metrics.
-4. **Correlation analysis** — Used Pearson correlation to quantify relationships between all variable pairs before making any causal claims — identifying which factors actually move together and which don't.
-5. **Cluster analysis** — Applied K-means clustering (implemented from scratch, not sklearn) to group counties into risk profiles based on four indicators: child poverty, youth uninsured rates, provider density, and median income. K=3 was chosen because it produced the most interpretable separation.
-6. **Geographic mapping** — Built a hex cartogram to visualize county-level uninsured rates. Hex cartograms were chosen over standard choropleth maps because Washington's counties vary enormously in geographic size — a traditional map gives visual weight to large, sparsely populated eastern counties while hiding small, densely populated western ones.
+This analysis uses a single self-contained Python script with all county-level data embedded directly. No external CSV files or databases are required — the data dictionary is built into `Code.py` for full reproducibility.
 
-**Tools used:** Python 3, pandas (data manipulation), matplotlib (visualization), seaborn (heatmap), NumPy (K-means implementation and statistical computation).
+The analytical pipeline includes descriptive statistics across all 39 counties, distribution analysis of key variables, rural vs. urban disparity comparisons, Pearson correlation analysis between all indicator pairs, a manually implemented K-means clustering algorithm (k=3, no scikit-learn) to classify counties into risk profiles, and a hex cartogram for geographic visualization.
+
+### Tools
+
+| Tool | Purpose |
+|------|---------|
+| pandas | Data manipulation and summary statistics |
+| NumPy | Array operations and K-means implementation |
+| Matplotlib | All figure generation (8 outputs) |
+| Seaborn | Correlation heatmap styling |
+
+No external machine learning libraries (scikit-learn, scipy, etc.) are used. The K-means algorithm is implemented from scratch using NumPy for educational transparency.
+
+---
 
 ## Data Processing
 
-### Sources
+### Data Sources
 
-| # | Dataset | Agency | Year |
-|---|---------|--------|------|
-| 1 | American Community Survey (ACS) 5-Year | U.S. Census Bureau | 2019–2023 |
-| 2 | Small Area Health Insurance Estimates (SAHIE) | U.S. Census Bureau | 2022 |
-| 3 | SAIPE (Poverty Estimates) | U.S. Census Bureau | 2022 |
-| 4 | National Survey of Children's Health (NSCH) | HRSA / MCHB | 2022 |
-| 5 | National Survey on Drug Use and Health (NSDUH) | SAMHSA | 2022–2023 |
-| 6 | Youth Risk Behavior Surveillance System (YRBSS) | CDC | 2023 |
-| 7 | Behavioral Risk Factor Surveillance (BRFSS) | CDC | 2023 |
-| 8 | Area Health Resources Files (AHRF) | HRSA | 2023 |
-| 9 | Mental Health America State Rankings | MHA | 2024 |
-| 10 | Rural-Urban Continuum Codes (RUCC) | USDA ERS | 2023 |
-| 11 | National Child Abuse and Neglect Data System | ACF / HHS | 2022 |
+County-level indicators were compiled from four federal sources:
 
-### What was collected
+| Source | Tables / Dataset | Variables |
+|--------|-----------------|-----------|
+| U.S. Census ACS 5-Year (2019–2023) | S2701, S1701, S1901, B01003, B03003 | Youth uninsured rate, child poverty, median income, population, Hispanic % |
+| HRSA Area Health Resource File (2023) | AHRF | Mental health provider rate per 100K |
+| SAMHSA NSDUH (2022–2023) | State-level estimates | Contextual prevalence benchmarks |
+| USDA Rural-Urban Continuum Codes (2023) | RUCC | Metro/non-metro county classification |
 
-Seven county-level indicators for all 39 Washington counties: youth uninsured rate (children under 19), child poverty rate (under 18), median household income, overall poverty rate, mental health provider density (per 100K residents), Hispanic/Latino population percentage, and total population. Counties were also classified as rural or urban based on USDA codes.
+A full list of all 11 reference datasets is available in [`data/sources.md`](data/sources.md).
 
-### Data evaluation and cleaning
+### Variables
 
-- ACS 5-year estimates were used instead of 1-year estimates for stable county-level baselines (small counties have unreliable single-year data).
-- NSDUH 2-year pooled estimates (2022–2023) were used because single-year state-level data doesn't break down to the county level.
-- Columbia County reported a 0.0% youth uninsured rate — this is a real data point (very small county, population ~3,900) rather than a data error, so it was retained.
-- All 39 counties have complete data across all seven indicators. No imputation was necessary.
+| Variable | Description | Source Table |
+|----------|-------------|-------------|
+| `Youth_Uninsured_Pct` | % of residents under 19 without health insurance | ACS S2701 |
+| `Child_Poverty_Pct` | % of residents under 18 below poverty line | ACS S1701 |
+| `Median_Income_K` | Median household income in thousands ($K) | ACS S1901 |
+| `Overall_Poverty_Pct` | % of all residents below poverty line | ACS S1701 |
+| `Is_Rural` | Binary rural classification (USDA RUCC: 1 = non-metro) | USDA RUCC |
+| `Population_K` | County population in thousands | ACS B01003 |
+| `MH_Providers_per100K` | Licensed mental health providers per 100K residents | HRSA AHRF |
+| `Hispanic_Pct` | % Hispanic/Latino population | ACS B03003 |
+
+### Data Evaluation
+
+All data comes from federally administered surveys with established methodologies. ACS estimates use 5-year pooling (2019–2023) for county-level reliability, which is standard practice for small-area estimation. RUCC codes provide a binary metro/non-metro split — a simplification that trades granularity for interpretability across just 39 observations.
+
+### Cleaning
+
+County data was entered directly from source tables and cross-verified. No imputation was needed — all 39 counties have complete records across all 8 variables. The `Rural_Label` column is derived from `Is_Rural` for visualization purposes.
+
+---
 
 ## Exploratory Data Analysis
 
@@ -68,120 +88,118 @@ Seven county-level indicators for all 39 Washington counties: youth uninsured ra
 
 ![Summary Statistics](outputs/summary_stats.png)
 
-The numbers tell a story of extremes. Youth uninsured rates range from 0.0% (Columbia) to 8.9% (Skamania) — that's a child in one county being nearly 9 times more likely to lack insurance than a child in another. Mental health provider density ranges from 40 per 100K (Garfield) to 380 per 100K (King) — a 9.5x gap. Median household income spans from $35,800 (Whitman) to $106,300 (King). These aren't small differences — they describe fundamentally different environments for children growing up in the same state.
+The summary table shows considerable variation across Washington's 39 counties. Youth uninsured rates range from 0.0% (Garfield) to 8.9% (Skamania), while mental health provider density spans a 9.5x gap between the least-served county (Garfield, 40 per 100K) and the best-served (King, 380 per 100K). Median household income ranges from $35,800 (Whitman) to $106,300 (King).
 
 ### Distributions
 
 ![Distributions](outputs/distributions.png)
 
-Most counties cluster around a youth uninsured rate of 3–5%, but a long tail extends to 7–9% in eastern and rural counties. Child poverty shows a wide, roughly normal distribution centered around 17.6%, with several counties exceeding 25%. MH provider density is right-skewed: most counties have between 80–200 providers per 100K, but a handful of urban counties (King, Snohomish, San Juan) pull the distribution far to the right. Income follows a similar pattern — most counties earn between $42K–$62K, with King County as a clear outlier at $106K.
+Youth uninsured rates are right-skewed, with most counties falling between 3–6% but a handful of agricultural counties pulling the tail above 7%. Child poverty shows a wider, more uniform spread. Provider density is bimodal — urban counties cluster above 200 per 100K while rural counties cluster below 150.
 
 ### Rural vs. Urban Disparities
 
 ![Rural vs Urban](outputs/rural_vs_urban.png)
 
-The rural-urban divide is where the data gets concrete. Rural counties average 127 MH providers per 100K residents. Urban counties average 225 — nearly double. Rural counties also carry higher child poverty (19.4% vs. 14.5%) and slightly higher youth uninsured rates (4.7% vs. 4.0%). The box plots show that the spread within rural counties is also wider, meaning some rural communities are doing far worse than the rural average suggests.
+Box plots reveal consistent disadvantage across rural counties (26 of 39). Rural counties average fewer mental health providers, higher child poverty, and higher youth uninsured rates compared to the 13 urban counties. The provider gap is the most pronounced disparity.
 
-## Correlation Analysis
-
-### What Drives Youth Mental Health Access?
-
-![Correlation Heatmap](outputs/heatmap.png)
-
-The Pearson correlation matrix reveals which factors actually move together across all 39 counties:
-
-- **Income → Providers (r = 0.79):** The strongest relationship in the dataset. Wealthier counties attract and retain more mental health providers. This isn't surprising, but the strength of the correlation — explaining over 60% of the variance — means income is the single best predictor of whether a county has adequate provider coverage.
-- **Child poverty → Youth uninsured (r = 0.70):** Counties with higher child poverty consistently have more uninsured children. But income alone doesn't explain access — some high-poverty counties maintain low uninsured rates through targeted enrollment programs, which means policy interventions can break this link.
-- **Hispanic % → Youth uninsured (r = 0.68):** This points to demographic-specific barriers in insurance enrollment. Counties with larger Hispanic populations tend to have higher youth uninsured rates, even after accounting for income — suggesting language barriers, documentation concerns, or outreach gaps.
-- **Income → Youth uninsured (r = -0.28):** Surprisingly weak. Income doesn't directly predict whether children are insured. The pathway runs through child poverty and provider availability instead.
-
-### Income Predicts Provider Access
-
-![Income vs Providers](outputs/income_vs_providers.png)
-
-This scatter plot isolates the strongest signal in the data. Each dot is a county, sized by population and colored by rural/urban classification. The trend line (r = 0.79) shows that for every $10K increase in median household income, a county gains roughly 30 more MH providers per 100K residents. Rural counties (orange) cluster in the lower-left — lower income, fewer providers. Urban counties (green) cluster in the upper-right. King County is the clear outlier in both dimensions.
-
-## Cluster Analysis
-
-### County Risk Profiles
-
-![Clustering](outputs/clustering.png)
-
-K-means clustering (k=3) groups the 39 counties into three distinct risk profiles based on child poverty, youth uninsured rates, provider density, and median income:
-
-- **Lower Risk (7 counties):** King, Clark, Snohomish, Pierce, Kitsap, Island, Thurston. Average child poverty of 11.9%, 260 MH providers per 100K. These are the state's population centers with the most resources.
-- **Higher Risk (8 counties):** Mid-range on most metrics but with specific vulnerabilities — either high poverty, low provider density, or both.
-- **Mixed/Rural (24 counties):** The largest group. Averages 20.9% child poverty with only 113 providers per 100K and 5.3% youth uninsured — nearly double the rate of the lowest-risk cluster. This is where the bulk of underserved communities are.
-
-The bubble sizes reflect population: King County is an outlier in both size and access, but most of the state lives in counties with far fewer resources.
-
-## Geographic Patterns
-
-### Youth Uninsured Rates by County
-
-![GIS Map](outputs/gis_map.png)
-
-The geographic pattern is clear: eastern and rural Washington carries the highest uninsured rates. Skamania (8.9%), Adams (8.2%), Douglas (7.3%), and Franklin (7.3%) lead the state. Western urban counties — King (2.4%), San Juan (2.5%), and Island (2.8%) — cluster at the low end. The statewide average of 4.5% masks a 4.5-fold gap between the highest and lowest counties.
-
-### Provider Density Ranking
+### Provider Ranking
 
 ![Provider Ranking](outputs/top_bottom_providers.png)
 
-All 39 counties ranked by mental health provider density. The bottom 10 (orange) are overwhelmingly rural — Garfield (40), Columbia (50), Wahkiakum (55), Skamania (70), Ferry (75). The top 10 (green) include every major urban center. The state average of 159 providers per 100K sits right in the middle, but 26 of 39 counties fall below it. The (R) markers confirm: provider shortage is largely a rural problem.
+A full ranking of all 39 counties by mental health provider density. The five most underserved counties — Garfield (40), Columbia (50), Wahkiakum (55), Skamania (70), and Ferry (75) — are all rural with populations under 13,000. The top five — King (380), Snohomish (290), San Juan (285), Whatcom (270), and Kitsap (265) — are predominantly urban or high-income.
 
-## Validating State-Level Claims
+### Income vs. Provider Access
 
-Washington's official reports and Mental Health America rankings make several claims about the state's youth mental health landscape. This analysis validates them with county-level data:
+![Income vs Providers](outputs/income_vs_providers.png)
 
-- **"WA ranks 48th nationally in youth mental health outcomes" (MHA 2024):** Consistent with the data. Even the state's best-performing counties have provider density below what states like Massachusetts or Connecticut achieve statewide.
-- **"70.6% of caregivers report difficulty accessing care" (NSCH 2022):** The provider ranking chart explains why. When 26 of 39 counties fall below the state average in provider density, and the bottom 10 have fewer than 100 providers per 100K, geographic access is a structural barrier for most families.
-- **"The provider gap is more consequential than the insurance gap":** Validated. Even in counties where uninsured rates are low (3–4%), provider shortages mean children with coverage still can't access care. The correlation between provider density and insurance is weak (r = 0.29), confirming they're separate problems.
+The strongest relationship in the dataset: median household income correlates with mental health provider density at r = 0.79. Bubble size represents county population. The scatter plot reveals that wealthier counties attract and retain more providers, while low-income rural counties face compounding disadvantages. King County is a clear outlier with both the highest income and highest provider rate.
+
+### Correlation Heatmap
+
+![Correlation Heatmap](outputs/heatmap.png)
+
+The full correlation matrix confirms several expected relationships. Income and providers show the strongest positive link (r = 0.79). Child poverty and youth uninsured rates are positively correlated. Rural classification is negatively associated with both income and provider availability. Hispanic population percentage correlates with youth uninsured rates, suggesting enrollment barriers in Hispanic-majority communities.
+
+### K-Means Clustering
+
+![Clustering](outputs/clustering.png)
+
+Counties are clustered into three risk profiles using a from-scratch K-means implementation (k=3) on standardized values of youth uninsured rate, child poverty, provider density, and median income. The three groups separate into lower-risk (low poverty, high providers), higher-risk (high poverty, low providers), and mixed/urban profiles. Bubble size represents population.
+
+### Geographic Distribution
+
+![GIS Map](outputs/gis_map.png)
+
+A hex cartogram showing youth uninsured rates across all 39 counties. Eastern agricultural counties (Adams, Skamania, Grant, Franklin, Douglas) show the highest rates, while western urban counties (King, Island, San Juan) have the lowest. The geographic pattern closely mirrors the income and provider gradients seen in earlier figures.
+
+---
+
+## Key Findings
+
+1. **Rural-urban provider gap.** Rural counties average significantly fewer mental health providers per 100K residents than urban counties — a structural shortage affecting 26 of 39 counties.
+
+2. **Income predicts access.** Median household income and provider density correlate at r = 0.79, the strongest relationship in the dataset. Wealthier counties attract and retain more providers.
+
+3. **Poverty compounds risk.** Child poverty is positively correlated with youth uninsured rates, meaning the counties where children most need coverage are least likely to have it.
+
+4. **Five critical counties.** Garfield (40 providers/100K), Columbia (50), Wahkiakum (55), Skamania (70), and Ferry (75) represent the most acute access deserts — all rural, all with populations under 13,000.
+
+5. **Uninsured rate extremes.** Skamania (8.9%), Adams (8.2%), and Franklin/Douglas (7.3%) have the highest youth uninsured rates, while Garfield (0.0%), King (2.4%), and San Juan (2.5%) have the lowest.
+
+6. **Demographic barriers.** Hispanic population percentage correlates with youth uninsured rates, pointing to enrollment barriers in communities like Adams (69% Hispanic, 8.2% uninsured) and Franklin (56% Hispanic, 7.3% uninsured).
+
+---
 
 ## Recommendations
 
-Based on the patterns in this data, four interventions would have the most impact:
+1. **Target provider recruitment in the five critical counties** — Garfield, Columbia, Wahkiakum, Skamania, and Ferry lack the population base to sustain private-practice models. Telehealth subsidies or state-funded provider rotations could bridge the gap.
 
-1. **Target provider recruitment to the bottom 10 counties.** Garfield, Columbia, Wahkiakum, Skamania, and Ferry have fewer than 75 providers per 100K. Loan forgiveness programs, telehealth infrastructure, and training pipelines tied to rural placements would directly address the biggest gap.
+2. **Expand insurance outreach in high-Hispanic communities** — The correlation between Hispanic population share and youth uninsured rates suggests language and documentation barriers to enrollment, not lack of eligibility. Bilingual navigators and community-based enrollment drives should be prioritized in Adams, Franklin, Grant, and Yakima counties.
 
-2. **Expand insurance enrollment outreach in high-Hispanic counties.** The r = 0.68 correlation between Hispanic population percentage and youth uninsured rates points to enrollment barriers that income alone doesn't explain. Bilingual navigators and community-based enrollment events in Adams, Franklin, Grant, and Yakima counties would close this gap.
+3. **Use clustering to prioritize funding** — The three risk profiles identified by K-means can guide tiered resource allocation: higher-risk counties need crisis-level intervention, mixed counties need targeted support, and lower-risk counties need maintenance funding.
 
-3. **Fund telehealth as a bridge, not a replacement.** The 24 counties in the Mixed/Rural cluster can't realistically recruit enough in-person providers to match urban levels. Telehealth can extend the reach of existing providers in Spokane, Thurston, and other hub counties into surrounding rural areas.
+4. **Invest in rural infrastructure** — The consistent rural disadvantage across providers, poverty, and insurance coverage reflects systemic underinvestment. Broadband expansion for telehealth, loan forgiveness for rural mental health professionals, and mobile crisis teams would address root causes.
 
-4. **Use cluster-specific metrics, not statewide averages.** The three-cluster model shows that statewide averages obscure the real picture. The 7 Lower Risk counties are performing well. The 24 Mixed/Rural counties need fundamentally different interventions than the 8 Higher Risk counties. Policy should be tailored to each profile.
+---
 
 ## Repository Structure
 
 ```
 youth-mental-health-wa/
-├── README.md
-├── LICENSE
-├── .gitignore
-├── Code.py                   ← Full analysis script (runs end-to-end)
-├── requirements.txt
+├── Code.py                          # Full analysis script (all data embedded)
 ├── data/
-│   └── sources.md            ← Detailed source documentation
-└── outputs/
-    ├── summary_stats.png     ← Summary statistics table
-    ├── distributions.png     ← Variable distributions
-    ├── rural_vs_urban.png    ← Rural vs urban comparison
-    ├── top_bottom_providers.png  ← Provider density ranking
-    ├── income_vs_providers.png   ← Income vs providers scatter
-    ├── heatmap.png           ← Correlation matrix
-    ├── clustering.png        ← K-means county clustering
-    └── gis_map.png           ← Youth uninsured hex cartogram
+│   └── sources.md                   # Dataset documentation and download links
+├── outputs/
+│   ├── summary_stats.png            # Fig 1: Summary statistics table
+│   ├── distributions.png            # Fig 2: Variable distributions
+│   ├── rural_vs_urban.png           # Fig 3: Rural vs urban box plots
+│   ├── top_bottom_providers.png     # Fig 4: Provider density ranking
+│   ├── income_vs_providers.png      # Fig 5: Income vs providers (r = 0.79)
+│   ├── heatmap.png                  # Fig 6: Correlation matrix
+│   ├── clustering.png               # Fig 7: K-means risk profiles
+│   └── gis_map.png                  # Fig 8: Hex cartogram
+├── requirements.txt
+├── LICENSE
+└── .gitignore
 ```
 
-## How to Reproduce
+---
+
+## How to Run
 
 ```bash
-pip install -r requirements.txt
+pip install pandas numpy matplotlib seaborn
 python Code.py
 ```
 
-All data is embedded in the analysis script — no external downloads required. Output charts are saved to `outputs/`.
+All 8 figures are saved to `outputs/`. No external data files are needed — the county data is embedded in the script.
 
-## License
+---
 
-Code is licensed under the [MIT License](LICENSE). Non-code content (visualizations, analysis, and documentation) is licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).
+## Copyright
 
-© 2026 Waleed Adawi. You may share and adapt with attribution for non-commercial purposes.
+© 2026 Waleed Adawi. All rights reserved.
+
+This project and its contents are shared for portfolio and educational purposes. Data sourced from U.S. Census Bureau (ACS), HRSA, SAMHSA, and USDA — all publicly available federal datasets. See [`data/sources.md`](data/sources.md) for full citations.
+
+Licensed under the [MIT License](LICENSE).
