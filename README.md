@@ -110,3 +110,10 @@ Washington State Community Connectors (WSCC) works to bridge gaps in health and 
 - The **correlation analysis** quantifies the relationship between poverty, insurance coverage, and provider access — the three factors that WSCC and similar organizations track when measuring whether their programs are reaching the populations most at risk.
 
 This project demonstrates the end-to-end data work involved in community health analytics: sourcing authoritative federal datasets, integrating multiple data streams at the county level, applying statistical and machine learning techniques to identify patterns, and producing outputs that directly support program planning and grant reporting.
+
+
+## License
+
+Code is licensed under the [MIT License](LICENSE). Non-code content (visualizations, analysis, and documentation) is licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).
+
+© 2026 Waleed Adawi. You may share and adapt with attribution for non-commercial purposes.
