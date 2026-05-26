@@ -10,7 +10,7 @@
 
 Mapping access gaps, provider shortages, and socioeconomic risk factors across all 39 Washington counties to identify where children are falling through the cracks.
 
-Over 126,000 children in Washington State have a diagnosed mental health condition but receive no treatment. The state ranks 48th nationally in youth mental health outcomes, and 70.6% of caregivers report difficulty accessing care — nearly 16 points above the national average. These aren't just statistics; they represent kids in specific counties where providers are scarce, poverty rates are high, and insurance coverage falls short. This project maps exactly where those gaps are and which factors drive them, giving policymakers and advocates the data to target interventions where they're needed most.
+Over 126,000 children in Washington State have a diagnosed mental health condition but receive no treatment. The state ranks 48th nationally in youth mental health outcomes, and 70.6% of caregivers report difficulty accessing care — nearly 16 points above the national average. These aren't just statistics; they represent children in specific counties where providers are scarce, poverty rates are high, and insurance coverage falls short. This project maps exactly where those gaps are and which factors drive them, giving policymakers and advocates the data to target interventions where they're needed most.
 
 **Skills demonstrated:** federal health data sourcing · county-level demographic analysis · K-means clustering (from scratch) · Pearson correlation · hex cartogram visualization · multi-dataset integration · publication-quality data visualization
 
