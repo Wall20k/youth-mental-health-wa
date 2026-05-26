@@ -1,7 +1,9 @@
 # Youth Mental Health in Washington State
 
 **Author:** Waleed Adawi · **Year:** 2026
+
 **Stack:** Python 3 · pandas · matplotlib · seaborn
+
 **Data:** U.S. Census ACS · SAMHSA NSDUH · HRSA AHRF · CDC YRBSS/BRFSS · MHA · USDA RUCC
 
 ## Overview
