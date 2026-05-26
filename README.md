@@ -3,6 +3,7 @@
 County-level analysis of youth mental health access gaps, provider shortages, and socioeconomic risk factors across all 39 Washington counties.
 
 **Author:** Waleed Adawi · **Year:** 2026  
+**Internship:** Washington State Community Connectors (WSCC) · Spring 2026  
 **Stack:** Python 3 · pandas · NumPy · Matplotlib · Seaborn
 
 ---
@@ -16,6 +17,8 @@ Rural and low-income communities in Washington State face disproportionate barri
 ### Why It Matters
 
 Washington has 39 counties spanning dense urban centers like King County (2.3M residents, 380 MH providers per 100K) to remote rural areas like Garfield County (2,200 residents, 40 providers per 100K). Understanding where access breaks down — and what drives those gaps — is the first step toward equitable resource allocation.
+
+This project was developed during a Spring 2026 internship with Washington State Community Connectors (WSCC), an organization that works to bridge gaps in health and social services across Washington's rural and underserved communities. The analysis directly supports the kind of evidence-based work that informs WSCC program planning, grant reporting, and advocacy.
 
 ### Objective
 
@@ -162,6 +165,21 @@ A hex cartogram showing youth uninsured rates across all 39 counties. Eastern ag
 
 ---
 
+## Relevance to WSCC
+
+This project was completed as part of a Spring 2026 internship with **Washington State Community Connectors (WSCC)**, an organization dedicated to bridging gaps in health and social services across Washington's rural and underserved communities.
+
+The analysis maps directly to WSCC's mission and operational needs:
+
+- **Geographic targeting** — The county-level maps and provider rankings identify where youth mental health services are most lacking, supporting WSCC's outreach resource allocation and grant applications.
+- **Risk segmentation** — The K-means clustering groups counties into actionable risk tiers that align with how state agencies and nonprofits prioritize intervention — distinguishing between counties that need more providers, more insurance enrollment support, or both.
+- **Evidence-based advocacy** — The correlation analysis quantifies the relationships between poverty, insurance coverage, and provider access — the three factors WSCC tracks when measuring whether programs are reaching the populations most at risk.
+- **Grant reporting** — The figures and statistics produced by this analysis provide ready-made evidence for grant applications and program evaluations.
+
+This project demonstrates the end-to-end data workflow involved in community health analytics: sourcing federal datasets, integrating multiple data streams at the county level, applying statistical and machine learning techniques, and producing outputs that directly support program planning.
+
+---
+
 ## Repository Structure
 
 ```
@@ -200,6 +218,6 @@ All 8 figures are saved to `outputs/`. No external data files are needed — the
 
 © 2026 Waleed Adawi. All rights reserved.
 
-This project and its contents are shared for portfolio and educational purposes. Data sourced from U.S. Census Bureau (ACS), HRSA, SAMHSA, and USDA — all publicly available federal datasets. See [`data/sources.md`](data/sources.md) for full citations.
+This project and its contents are shared for portfolio and educational purposes. Developed during a Spring 2026 internship with Washington State Community Connectors (WSCC). Data sourced from U.S. Census Bureau (ACS), HRSA, SAMHSA, and USDA — all publicly available federal datasets. See [`data/sources.md`](data/sources.md) for full citations.
 
 Licensed under the [MIT License](LICENSE).
