@@ -280,7 +280,7 @@ def create_summary_stats():
             cell = table[i + 1, j]
             cell.set_facecolor('#FFFFFF' if i % 2 == 0 else '#F5FAF7')
 
-    ax.set_title('Summary Statistics — 39 Washington Counties (12 Variables)',
+    ax.set_title('Summary Statistics — 39 Washington Counties (10 Key Indicators)',
                  fontsize=16, fontweight='bold', color=FOREST, pad=20, fontfamily='serif')
 
     path = os.path.join(OUTPUT_DIR, 'summary_stats.png')
@@ -1096,7 +1096,7 @@ def print_key_findings():
     print(f'\n5. UNINSURED RATE EXTREMES')
     print(f'   Highest: {", ".join(f"{r.County} ({r.Youth_Uninsured_Pct}%)" for _, r in highest.iterrows())}')
     print(f'   Lowest:  {", ".join(f"{r.County} ({r.Youth_Uninsured_Pct}%)" for _, r in lowest.iterrows())}')
-    print(f'   Gap: {df.Youth_Uninsured_Pct.max() - df.Youth_Uninsured_Pct.min():.1f}x between highest and lowest')
+    print(f'   Gap: {df.Youth_Uninsured_Pct.max() - df.Youth_Uninsured_Pct.min():.1f} percentage points between highest and lowest')
 
     # Hispanic correlation
     r_hisp = df['Hispanic_Pct'].corr(df['Youth_Uninsured_Pct'])
