@@ -242,6 +242,7 @@ This project demonstrates the end-to-end data workflow involved in community hea
 
 ## Repository Structure
 
+```
 youth-mental-health-wa/
 ├── Code.py                          # Full analysis script (all data embedded)
 ├── data/
@@ -261,7 +262,7 @@ youth-mental-health-wa/
 ├── requirements.txt
 ├── LICENSE
 └── .gitignore
-
+```
 ---
 
 ## How to Run
