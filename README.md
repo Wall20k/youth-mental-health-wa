@@ -193,6 +193,50 @@ State-level survey data from NSCH (Indicator 4.4a, 2022–2023) reveals that **7
 
 ---
 
+## Machine Learning Analysis (National Context)
+
+To move beyond descriptive correlations (n = 39 WA counties), we scaled the analysis to 2,957 U.S. counties using CDC PLACES 2023 county-level health estimates and USDA RUCC rural/urban codes. Five ML models were trained on 8 county-level health indicators to predict mental distress rates nationally, with WA counties highlighted throughout.
+
+### Data
+
+County-level BRFSS-based estimates from CDC PLACES (2023) for ~3,000 counties: mental distress, depression, uninsured rate, obesity, physical inactivity, diabetes, binge drinking, food insecurity, and housing insecurity. Longitudinal comparison using 2020 CDC PLACES data for trend analysis.
+
+### Models and Key Results
+
+**Random Forest** (R² = 0.479, 5-fold CV) — Housing insecurity is the strongest single predictor of county-level mental distress (importance = 0.296), followed by obesity (0.210) and food insecurity (0.173). Rural/urban status has near-zero importance once socioeconomic factors are controlled. WA counties rank below the national average on all three top predictors.
+
+![Random Forest](ml_outputs/ml_random_forest.png)
+
+**Ridge / Lasso Regression** — Lasso dropped 5 of 8 predictors and still outperformed Ridge (R² = 0.326 vs 0.291). The three surviving predictors — housing insecurity, physical inactivity, and obesity — carry most of the signal. WA scores below the national mean on all three (z-scores: −0.23, −1.40, −0.73), indicating relative advantage on the factors that matter most.
+
+![Ridge vs Lasso](ml_outputs/ml_ridge_lasso.png)
+
+**PCA** — PC1 captures 56.9% of all variance across 10 health indicators, revealing that county-level health measures are largely driven by a single underlying "community health/deprivation" dimension. WA counties cluster in the healthier (left) portion of the PCA space, with Yakima and Ferry pulling rightward toward higher-risk profiles and King/San Juan on the far left.
+
+![PCA](ml_outputs/ml_pca.png)
+
+**Hierarchical Clustering** (Ward linkage, k = 4) — The dendrogram reveals a natural 4-cluster structure across U.S. counties. Most WA counties (26/39) fall in the lowest-distress cluster, but Yakima and Adams land in a higher-risk national cluster, confirming that WA's internal disparities mirror national patterns.
+
+![Dendrogram](ml_outputs/ml_dendrogram.png)
+
+**Logistic Regression** (74.9% accuracy, 5-fold CV) — Food insecurity has an odds ratio of 6.01 (per 1 SD increase → 6x higher odds of high mental distress). 14 of 39 WA counties (36%) are classified as high-risk against the national median threshold of 17.2%.
+
+![Logistic Regression](ml_outputs/ml_logistic_regression.png)
+
+**Longitudinal Change (2020 → 2023)** — Mental distress rose nationally (+2.63 pp) but less in WA (+2.03 pp). Depression rose nationally (+2.01 pp) while WA declined (−0.34 pp). Uninsured rates dropped everywhere, but WA's decline (−2.89 pp) was smaller than the national average (−5.31 pp).
+
+![Longitudinal Change](ml_outputs/ml_longitudinal_change.png)
+
+### Interactive Map
+
+An interactive choropleth map of all 2,957 counties is available at [`ml_outputs/interactive_map.html`](ml_outputs/interactive_map.html). Toggle between the 3 Lasso-selected predictors, mental distress, and risk classification. WA counties are outlined in orange. Click any county for detailed health indicators and national comparisons.
+
+### ML Takeaway
+
+The ML models reframe the policy conversation: the strongest predictors of county-level mental distress are not insurance coverage or rural status — they are material conditions like housing insecurity, physical inactivity, and obesity. WA performs relatively well on these factors nationally, but its 14 high-risk counties (including Yakima, Cowlitz, Grays Harbor, Adams, and Whitman) share profiles with the most distressed counties in the country.
+
+---
+
 ## Recommendations
 
 1. **Target provider recruitment in the five critical counties** — Garfield, Columbia, Wahkiakum, Skamania, and Ferry lack the population base to sustain private-practice models. Telehealth subsidies or state-funded provider rotations could help bridge the gap.
@@ -221,6 +265,8 @@ The K-means clustering (k=3) is used as exploratory county segmentation to ident
 
 The caregiver access finding (70.6% reporting difficulty) comes from the NSCH, a nationally representative caregiver-reported survey. Survey-based measures may reflect reporting bias — caregivers who are more engaged with the health system may be more likely to respond — and the state-level estimate carries a margin of error not shown in the figure.
 
+The ML models (Random Forest, Ridge/Lasso, PCA, Hierarchical Clustering, Logistic Regression) were trained on CDC PLACES 2023 county-level estimates derived from BRFSS, which are themselves modeled from survey data — not direct measurements. The models explain 29–48% of variance in mental distress (R² = 0.291–0.479), meaning more than half of county-level variation is driven by factors not captured in these 8 predictors. Feature importance rankings describe predictive power within this specific model and dataset, not causal mechanisms. The Lasso variable selection is sensitive to the regularization parameter and should be interpreted as identifying the most predictive subset, not the only relevant factors.
+
 This analysis is intended to support needs assessment, outreach planning, and resource prioritization. It is not intended for clinical diagnosis, individual-level inference, or definitive policy prescription. The findings are strongest when used alongside local expertise, program-level data, and community input.
 
 ---
@@ -244,21 +290,31 @@ This project demonstrates the end-to-end data workflow involved in community hea
 
 ```
 youth-mental-health-wa/
-├── Code.py                          # Full analysis script (all data embedded)
+├── Code.py                              # WA county analysis (all data embedded, 11 figures)
+├── ML_Analysis.py                       # National ML models (pulls CDC PLACES API, 6 figures)
 ├── data/
-│   └── sources.md                   # Dataset documentation and download links
-├── outputs/
-│   ├── summary_stats.png            # Fig 1: Summary statistics table
-│   ├── distributions.png            # Fig 2: Variable distributions (2x3)
-│   ├── rural_vs_urban.png           # Fig 3: Rural vs urban box plots
-│   ├── top_bottom_providers.png     # Fig 4: Provider density ranking
-│   ├── income_vs_providers.png      # Fig 5: Income vs providers (r = 0.79)
-│   ├── heatmap.png                  # Fig 6: Correlation matrix (11 variables)
-│   ├── clustering.png               # Fig 7: K-means risk profiles (k=3)
-│   ├── gis_map.png                  # Fig 8: Hex cartogram
-│   ├── youth_mh_prevalence.png      # Fig 9: Youth MH diagnosis & sadness
-│   ├── maltreatment_analysis.png    # Fig 10: Child maltreatment rankings
-│   └── caregiver_access_barriers.png # Fig 11: Caregiver access difficulty (NSCH)
+│   └── sources.md                       # Dataset documentation and download links
+├── outputs/                             # WA-specific EDA outputs
+│   ├── summary_stats.png               # Fig 1: Summary statistics table
+│   ├── distributions.png               # Fig 2: Variable distributions (2x3)
+│   ├── rural_vs_urban.png              # Fig 3: Rural vs urban box plots
+│   ├── top_bottom_providers.png        # Fig 4: Provider density ranking
+│   ├── income_vs_providers.png         # Fig 5: Income vs providers (r = 0.79)
+│   ├── heatmap.png                     # Fig 6: Correlation matrix (11 variables)
+│   ├── clustering.png                  # Fig 7: K-means risk profiles (k=3)
+│   ├── gis_map.png                     # Fig 8: Hex cartogram
+│   ├── youth_mh_prevalence.png         # Fig 9: Youth MH diagnosis & sadness
+│   ├── maltreatment_analysis.png       # Fig 10: Child maltreatment rankings
+│   └── caregiver_access_barriers.png   # Fig 11: Caregiver access difficulty (NSCH)
+├── ml_outputs/                          # National ML outputs
+│   ├── ml_random_forest.png            # Feature importance + WA comparison
+│   ├── ml_ridge_lasso.png              # Variable selection + WA z-scores
+│   ├── ml_pca.png                      # PCA with WA highlighted
+│   ├── ml_dendrogram.png               # Hierarchical clustering + WA placement
+│   ├── ml_logistic_regression.png      # Risk classification + WA counties
+│   ├── ml_longitudinal_change.png      # 2020→2023 trends (WA vs national)
+│   ├── interactive_map.html            # Interactive choropleth (open in browser)
+│   └── national_county_data.csv        # Source data (2,957 counties)
 ├── requirements.txt
 ├── LICENSE
 └── .gitignore
@@ -269,11 +325,16 @@ youth-mental-health-wa/
 ## How to Run
 
 ```bash
+# WA county analysis (11 figures, no external data needed)
 pip install pandas numpy matplotlib seaborn
 python Code.py
+
+# National ML analysis (6 figures + interactive map, pulls CDC PLACES API)
+pip install pandas numpy matplotlib seaborn scikit-learn scipy requests
+python ML_Analysis.py
 ```
 
-All 11 figures are saved to `outputs/`. No external data files are needed — the county data is embedded in the script.
+`Code.py` saves 11 figures to `outputs/` with all county data embedded. `ML_Analysis.py` pulls ~3,000 counties from the CDC PLACES API on first run (cached afterward), runs 5 ML models, and saves 6 figures + interactive map to `ml_outputs/`.
 
 ---
 
