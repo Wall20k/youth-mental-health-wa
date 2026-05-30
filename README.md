@@ -52,7 +52,7 @@ This project has two phases. **Phase 1** quantifies the relationships between so
 
 ### Data Sources
 
-County-level indicators were compiled from 11 federal sources:
+**Phase 1** — County-level indicators were compiled from 11 federal sources:
 
 | Source | Tables / Dataset | Variables |
 |--------|-----------------|-----------|
@@ -73,7 +73,9 @@ Cross-validation / state-level context (not direct county variables):
 | SAMHSA NSDUH (2022-2023) | Contextual state-level prevalence benchmarks |
 | MHA (Mental Health America) State Rankings | State-level context on WA's overall MH landscape |
 
-### Variables
+**Phase 2** — County-level BRFSS-based estimates were pulled from the CDC PLACES API (2023 release) for 2,957 U.S. counties: mental distress, depression, uninsured rate, obesity, physical inactivity, diabetes, binge drinking, food insecurity, housing insecurity, and poor general health. USDA RUCC codes (2023) were joined for rural/urban classification. Longitudinal comparison data was pulled from the 2020 CDC PLACES release for trend analysis.
+
+### Variables (Phase 1)
 
 | Variable | Description | Source |
 |----------|-------------|--------|
@@ -92,91 +94,23 @@ Cross-validation / state-level context (not direct county variables):
 
 ### Data Evaluation
 
-All data comes from federally administered surveys with established methodologies. ACS estimates use 5-year pooling (2019-2023) for county-level reliability, which is standard practice for small-area estimation. RUCC codes provide a binary metro/non-metro split — a simplification that trades granularity for interpretability across just 39 observations. NSCH and YRBSS data are survey-based with state-level samples allocated to counties using demographic weighting. BRFSS and NCANDS provide direct county-level estimates.
+All Phase 1 data comes from federally administered surveys with established methodologies. ACS estimates use 5-year pooling (2019-2023) for county-level reliability, which is standard practice for small-area estimation. RUCC codes provide a binary metro/non-metro split — a simplification that trades granularity for interpretability across just 39 observations. NSCH and YRBSS data are survey-based with state-level samples allocated to counties using demographic weighting. BRFSS and NCANDS provide direct county-level estimates. Phase 2 CDC PLACES estimates are BRFSS-derived small-area models validated by the CDC for county-level use.
 
 ### Cleaning
 
-County data was entered directly from source tables and cross-verified. No imputation was needed — all 39 counties have complete records across all 12 variables. The `Rural_Label` column is derived from `Is_Rural` for visualization purposes.
-
----
-
-## Exploratory Data Analysis
-
-### Summary Statistics
-
-![Summary Statistics](outputs/summary_stats.png)
-
-The summary table shows considerable variation across Washington's 39 counties. Youth uninsured rates range from 0.0% (Garfield) to 8.9% (Skamania), while mental health provider density spans a 9.5x gap between the least-served county (Garfield, 40 per 100K) and the best-served (King, 380 per 100K). Median household income ranges from $35,800 (Whitman) to $106,300 (King). Youth MH diagnosis rates range from 16.2% (San Juan) to 26.4% (Yakima).
-
-### Distributions
-
-![Distributions](outputs/distributions.png)
-
-Youth uninsured rates are right-skewed, with most counties falling between 3-6% but a handful of agricultural counties pulling the tail above 7%. Child poverty shows a wider, more uniform spread. Provider density is bimodal — urban counties cluster above 200 per 100K while rural counties cluster below 150. Youth MH diagnosis rates center around 20% with a right tail driven by high-poverty rural counties. Youth sadness prevalence averages 43.8%, well above the national average of ~42%.
-
-### Rural vs. Urban Disparities
-
-![Rural vs Urban](outputs/rural_vs_urban.png)
-
-Box plots reveal consistent disadvantage across rural counties (26 of 39). Rural counties average fewer mental health providers, higher child poverty, and higher youth uninsured rates compared to the 13 urban counties. The provider gap is the most pronounced disparity.
-
-### Provider Ranking
-
-![Provider Ranking](outputs/top_bottom_providers.png)
-
-A full ranking of all 39 counties by mental health provider density. The five most underserved counties — Garfield (40), Columbia (50), Wahkiakum (55), Skamania (70), and Ferry (75) — are all rural with populations under 13,000. The top five — King (380), Snohomish (290), San Juan (285), Whatcom (270), and Kitsap (265) — are predominantly urban or high-income.
-
-### Income vs. Provider Access
-
-![Income vs Providers](outputs/income_vs_providers.png)
-
-The strongest relationship in the dataset: median household income correlates with mental health provider density at r = 0.79. Bubble size represents county population. The scatter plot shows that wealthier counties tend to have higher provider density, while low-income rural counties face compounding disadvantages. King County is a clear outlier with both the highest income and highest provider rate.
-
-### Correlation Heatmap
-
-![Correlation Heatmap](outputs/heatmap.png)
-
-The full correlation matrix across all 11 county-level variables highlights several expected associations and surfaces additional patterns. Income and providers show the strongest positive link (r = 0.79). Youth sadness and child poverty correlate at r = 0.96. Adult MH days and youth sadness track at r = 0.98 — counties where adults report more mentally unhealthy days are the same counties where youth report persistent sadness. Child maltreatment correlates strongly with poverty (r = 0.90) and inversely with income (r = -0.63). Hispanic population percentage correlates with youth uninsured rates (r = 0.68). Because the analysis includes only 39 counties and some indicators are survey-based or proxy-derived, very high correlations (r > 0.90) should be interpreted as strong exploratory county-level signals rather than causal proof.
-
-### K-Means Clustering
-
-![Clustering](outputs/clustering.png)
-
-Counties are clustered into three risk profiles using a from-scratch K-means implementation (k=3) on standardized values of youth uninsured rate, child poverty, provider density, and median income. The three groups separate into lower-risk (low poverty, high providers), higher-risk (high poverty, low providers), and mixed/urban profiles. Bubble size represents population.
-
-### Geographic Distribution
-
-![GIS Map](outputs/gis_map.png)
-
-A hex cartogram showing youth uninsured rates across all 39 counties. Eastern agricultural counties (Adams, Skamania, Grant, Franklin, Douglas) show the highest rates, while western urban counties (King, Island, San Juan) have the lowest. The geographic pattern closely mirrors the income and provider gradients seen in earlier figures.
-
-### Youth MH Prevalence
-
-![Youth MH Prevalence](outputs/youth_mh_prevalence.png)
-
-Two-panel figure examining youth mental health outcomes. The left panel plots youth MH diagnosis rates (NSCH) against provider density, revealing a negative correlation (r = -0.41) — counties with fewer providers tend to have higher diagnosis rates, suggesting that higher need in underserved areas may outpace the available diagnostic capacity. The right panel shows youth sadness prevalence (YRBSS) vs. child poverty, with a striking r = 0.96 correlation indicating that child poverty is the strongest county-level correlate of adolescent emotional distress in this dataset.
-
-### Child Maltreatment Analysis
-
-![Maltreatment Analysis](outputs/maltreatment_analysis.png)
-
-County rankings by child maltreatment rate (NCANDS) alongside poverty correlation. Yakima (17.2 per 1K), Ferry (16.2), and Okanogan (15.5) have the highest rates. Maltreatment correlates strongly with child poverty (r = 0.90) and inversely with income (r = -0.63), indicating that economic hardship is strongly associated with maltreatment at the county level.
-
-### Caregiver Access Barriers
-
-![Caregiver Access Barriers](outputs/caregiver_access_barriers.png)
-
-State-level survey data from NSCH (Indicator 4.4a, 2022–2023) reveals that **70.6% of Washington caregivers who sought mental health care for their children reported difficulty obtaining it**. Only 29.5% said the process was not difficult, while 33.8% found it somewhat difficult, 29.4% very difficult, and 7.4% said it was not possible. This represents approximately 182,995 Washington families encountering barriers. Washington's 70.6% difficulty rate exceeds the national average of 55.0% by 15.6 percentage points, placing Washington well above the national average in caregiver-reported difficulty.
+County data was entered directly from source tables and cross-verified. No imputation was needed — all 39 counties have complete records across all 12 variables. The `Rural_Label` column is derived from `Is_Rural` for visualization purposes. For Phase 2, counties with missing values on the three key measures (mental distress, depression, uninsured rate) were excluded; remaining missing values were filled with column medians.
 
 ---
 
 ## Key Findings
 
+### Phase 1 — Washington State (39 Counties)
+
 1. **70.6% of caregivers report difficulty accessing youth MH care.** Among Washington families who sought mental health care for their children, 70.6% reported some form of difficulty (NSCH 2022–2023). This is 15.6 percentage points above the national average of 55.0%, representing approximately 183,000 families encountering barriers.
 
 2. **Rural-urban provider gap.** Rural counties average 127 providers per 100K vs. 225 in urban counties — a gap of 99 fewer providers per 100K affecting 26 of 39 counties.
 
-3. **Income is strongly associated with access.** Median household income and provider density correlate at r = 0.79, the strongest relationship in the dataset. Wealthier counties tend to have higher provider density.
+3. **Income is strongly associated with access.** Median household income and provider density correlate at r = 0.79, the strongest relationship in the WA dataset. Wealthier counties tend to have higher provider density.
 
 4. **Poverty is the strongest correlate of youth sadness.** Child poverty and youth sadness/hopelessness correlate at r = 0.96, the tightest link between any socioeconomic factor and a mental health outcome in this analysis. Adult and youth mental health burden also track closely (r = 0.98), suggesting that family- and community-level mental health conditions should be considered alongside youth-specific measures when planning outreach.
 
@@ -192,6 +126,8 @@ State-level survey data from NSCH (Indicator 4.4a, 2022–2023) reveals that **7
 
 10. **Youth MH prevalence.** State average of 20.8% of children 3-17 have an anxiety/depression diagnosis (NSCH), with Yakima (26.4%), Okanogan (25.2%), and Ferry (24.1%) highest.
 
+### Phase 2 — National ML Benchmarking (2,957 Counties)
+
 11. **Housing insecurity is the #1 national predictor of mental distress.** Random Forest trained on 2,957 counties identifies housing insecurity (importance = 0.296), obesity (0.210), and food insecurity (0.173) as the top three predictors — not insurance coverage or rural status. Lasso regression confirms: only housing insecurity, physical inactivity, and obesity survive variable selection.
 
 12. **36% of WA counties are high-risk by national standards.** Logistic regression classifies 14 of 39 WA counties above the national median for mental distress (17.2%). Whitman (20.9%), Cowlitz (18.7%), and Grays Harbor (18.4%) lead. Food insecurity has an odds ratio of 6.01 — a 1 SD increase makes a county 6x more likely to be classified high-risk.
@@ -200,9 +136,81 @@ State-level survey data from NSCH (Indicator 4.4a, 2022–2023) reveals that **7
 
 14. **WA's internal disparities mirror national patterns.** Hierarchical clustering of 2,957 counties shows that Yakima and Adams share health profiles with the most distressed counties in the southeastern U.S., while King and San Juan cluster with the healthiest counties nationally.
 
+15. **10 health indicators collapse into one dimension.** PCA reveals that 56.9% of all county-level health variation is explained by a single principal component — a general "community deprivation" axis. Poverty, obesity, physical inactivity, food insecurity, and mental distress are not separate problems; they are manifestations of the same underlying county-level disadvantage.
+
 ---
 
-## Machine Learning Analysis (National Context)
+## Phase 1: Exploratory Data Analysis
+
+### Summary Statistics
+
+![Summary Statistics](outputs/summary_stats.png)
+
+The summary table reveals the scale of variation across Washington's 39 counties. Youth uninsured rates range from 0.0% (Garfield) to 8.9% (Skamania), while mental health provider density spans a 9.5x gap between the least-served county (Garfield, 40 per 100K) and the best-served (King, 380 per 100K). Median household income ranges from $35,800 (Whitman) to $106,300 (King). Youth MH diagnosis rates range from 16.2% (San Juan) to 26.4% (Yakima). This level of within-state variation is what motivates the county-level analysis — state averages mask the reality that rural eastern WA counties face a fundamentally different access landscape than urban western WA counties.
+
+### Distributions
+
+![Distributions](outputs/distributions.png)
+
+Youth uninsured rates are right-skewed, with most counties falling between 3-6% but a handful of agricultural counties pulling the tail above 7%. Child poverty shows a wider, more uniform spread. Provider density is bimodal — urban counties cluster above 200 per 100K while rural counties cluster below 150, suggesting two distinct tiers of access rather than a smooth gradient. Youth MH diagnosis rates center around 20% with a right tail driven by high-poverty rural counties. Youth sadness prevalence averages 43.8%, well above the national average of ~42%. These distributions informed the variable selection for the Phase 2 ML models, where similar health indicators are available nationally.
+
+### Rural vs. Urban Disparities
+
+![Rural vs Urban](outputs/rural_vs_urban.png)
+
+Box plots reveal consistent disadvantage across rural counties (26 of 39). Rural counties average fewer mental health providers, higher child poverty, and higher youth uninsured rates compared to the 13 urban counties. The provider gap is the most pronounced disparity. However, the Phase 2 ML analysis later reveals that rural/urban status itself has near-zero predictive importance for mental distress once socioeconomic factors are controlled — the disparity is driven by what comes with rurality (poverty, food insecurity, housing insecurity), not rurality itself.
+
+### Provider Ranking
+
+![Provider Ranking](outputs/top_bottom_providers.png)
+
+A full ranking of all 39 counties by mental health provider density. The five most underserved counties — Garfield (40), Columbia (50), Wahkiakum (55), Skamania (70), and Ferry (75) — are all rural with populations under 13,000. The top five — King (380), Snohomish (290), San Juan (285), Whatcom (270), and Kitsap (265) — are predominantly urban or high-income. The 9.5x gap between the top and bottom counties represents one of the widest within-state provider disparities in the Pacific Northwest.
+
+### Income vs. Provider Access
+
+![Income vs Providers](outputs/income_vs_providers.png)
+
+The strongest relationship in the WA dataset: median household income correlates with mental health provider density at r = 0.79. Bubble size represents county population. The scatter plot shows that wealthier counties tend to have higher provider density, while low-income rural counties face compounding disadvantages. King County is a clear outlier with both the highest income and highest provider rate. This relationship — income predicting provider access — is consistent with the Phase 2 national finding that socioeconomic conditions are stronger predictors of health outcomes than geographic or system-level variables.
+
+### Correlation Heatmap
+
+![Correlation Heatmap](outputs/heatmap.png)
+
+The full correlation matrix across all 11 county-level variables highlights several expected associations and surfaces additional patterns. Income and providers show the strongest positive link (r = 0.79). Youth sadness and child poverty correlate at r = 0.96. Adult MH days and youth sadness track at r = 0.98 — counties where adults report more mentally unhealthy days are the same counties where youth report persistent sadness, a finding that foreshadows the Phase 2 PCA result showing these indicators collapse into a single "community deprivation" dimension. Child maltreatment correlates strongly with poverty (r = 0.90) and inversely with income (r = -0.63). Hispanic population percentage correlates with youth uninsured rates (r = 0.68). Because the analysis includes only 39 counties and some indicators are survey-based or proxy-derived, very high correlations (r > 0.90) should be interpreted as strong exploratory county-level signals rather than causal proof.
+
+### K-Means Clustering
+
+![Clustering](outputs/clustering.png)
+
+Counties are clustered into three risk profiles using a from-scratch K-means implementation (k=3) on standardized values of youth uninsured rate, child poverty, provider density, and median income. The three groups separate into lower-risk (low poverty, high providers), higher-risk (high poverty, low providers), and mixed/urban profiles. Bubble size represents population. The Phase 2 hierarchical clustering later validates this approach at national scale, showing that WA's internal risk groupings reflect broader national patterns — Yakima and Adams cluster with the most distressed counties in the southeastern U.S., while King and San Juan cluster with the healthiest counties nationally.
+
+### Geographic Distribution
+
+![GIS Map](outputs/gis_map.png)
+
+A hex cartogram showing youth uninsured rates across all 39 counties. Eastern agricultural counties (Adams, Skamania, Grant, Franklin, Douglas) show the highest rates, while western urban counties (King, Island, San Juan) have the lowest. The geographic pattern closely mirrors the income and provider gradients seen in earlier figures and aligns with the Phase 2 interactive map, which shows this same east-west gradient is part of a broader national pattern where agricultural and rural counties across the country face similar compound disadvantages.
+
+### Youth MH Prevalence
+
+![Youth MH Prevalence](outputs/youth_mh_prevalence.png)
+
+Two-panel figure examining youth mental health outcomes. The left panel plots youth MH diagnosis rates (NSCH) against provider density, revealing a negative correlation (r = -0.41) — counties with fewer providers tend to have higher diagnosis rates, suggesting that higher need in underserved areas may outpace the available diagnostic capacity. The right panel shows youth sadness prevalence (YRBSS) vs. child poverty, with a striking r = 0.96 correlation indicating that child poverty is the strongest county-level correlate of adolescent emotional distress in the WA dataset. The Phase 2 ML models confirm that this pattern holds nationally: socioeconomic deprivation indicators (food insecurity, housing insecurity, physical inactivity) are stronger predictors of distress than system-level variables like insurance coverage.
+
+### Child Maltreatment Analysis
+
+![Maltreatment Analysis](outputs/maltreatment_analysis.png)
+
+County rankings by child maltreatment rate (NCANDS) alongside poverty correlation. Yakima (17.2 per 1K), Ferry (16.2), and Okanogan (15.5) have the highest rates. Maltreatment correlates strongly with child poverty (r = 0.90) and inversely with income (r = -0.63), indicating that economic hardship is strongly associated with maltreatment at the county level. The same three counties (Yakima, Ferry, Okanogan) also rank among WA's highest on the Phase 2 national mental distress measure, reinforcing that child welfare and mental health challenges concentrate in the same communities.
+
+### Caregiver Access Barriers
+
+![Caregiver Access Barriers](outputs/caregiver_access_barriers.png)
+
+State-level survey data from NSCH (Indicator 4.4a, 2022–2023) reveals that **70.6% of Washington caregivers who sought mental health care for their children reported difficulty obtaining it**. Only 29.5% said the process was not difficult, while 33.8% found it somewhat difficult, 29.4% very difficult, and 7.4% said it was not possible. This represents approximately 182,995 Washington families encountering barriers. Washington's 70.6% difficulty rate exceeds the national average of 55.0% by 15.6 percentage points, placing Washington well above the national average in caregiver-reported difficulty. This finding adds a demand-side perspective that complements the supply-side analysis (provider density, insurance coverage) — even families who actively seek care face structural barriers to obtaining it.
+
+---
+
+## Phase 2: Machine Learning Analysis (National Context)
 
 ### Why ML?
 
@@ -224,7 +232,7 @@ A Random Forest regressor (500 trees, max depth 10) was trained to predict count
 
 #### 2. Ridge / Lasso Regression — Variable Selection
 
-Ridge and Lasso regression answer a different question than Random Forest: if you had to build a simple linear model to predict mental distress, which variables would you keep and which would you drop? Ridge keeps all predictors but shrinks their coefficients toward zero — positive coefficients mean that indicator is associated with higher distress, negative with lower. Lasso goes further by forcing weak predictors to exactly zero, effectively selecting a minimal set. Lasso dropped 5 of 7 predictors entirely (food insecurity, binge drinking, diabetes, uninsured) and still achieved a higher R² than Ridge (0.326 vs 0.291). The three survivors — housing insecurity, physical inactivity, and obesity — are sufficient to explain most of the linear relationship. The right panel shows WA's z-scores on those three factors: WA is 0.23 standard deviations below national average on housing insecurity, 1.40 below on physical inactivity, and 0.73 below on obesity. All negative — meaning WA has a relative advantage on every factor Lasso identified as important.
+Ridge and Lasso regression answer a different question than Random Forest: if you had to build a simple linear model to predict mental distress, which variables would you keep and which would you drop? Ridge keeps all predictors but shrinks their coefficients toward zero — positive coefficients mean that indicator is associated with higher distress, negative with lower. Lasso goes further by forcing weak predictors to exactly zero, effectively selecting a minimal set. Lasso dropped 4 of 7 predictors entirely (food insecurity, binge drinking, diabetes, uninsured) and still achieved a higher R² than Ridge (0.326 vs 0.291). The three survivors — housing insecurity, physical inactivity, and obesity — are sufficient to explain most of the linear relationship. The right panel shows WA's z-scores on those three factors: WA is 0.23 standard deviations below national average on housing insecurity, 1.40 below on physical inactivity, and 0.73 below on obesity. All negative — meaning WA has a relative advantage on every factor Lasso identified as important.
 
 ![Ridge vs Lasso](ml_outputs/ml_ridge_lasso.png)
 
@@ -268,13 +276,17 @@ The ML models answer a question that correlations alone cannot: what actually pr
 
 2. **Expand insurance outreach in high-Hispanic communities** — The correlation between Hispanic population share and youth uninsured rates suggests language and documentation barriers to enrollment, not necessarily lack of program eligibility. Bilingual navigators and community-based enrollment drives should be prioritized in Adams, Franklin, Grant, and Yakima counties.
 
-3. **Use clustering to inform prioritization** — The three risk profiles identified by K-means can serve as one structured input for tiered resource allocation, alongside local context and service data: higher-risk counties may benefit from intensive, targeted intervention; mixed counties from targeted support; and lower-risk counties from maintenance funding.
+3. **Use clustering to inform prioritization** — The three WA risk profiles (K-means) and four national clusters (hierarchical) can serve as structured inputs for tiered resource allocation: higher-risk counties may benefit from intensive, targeted intervention; mixed counties from targeted support; and lower-risk counties from maintenance funding.
 
 4. **Invest in rural infrastructure** — The consistent rural disadvantage across providers, poverty, and insurance coverage reflects systemic underinvestment. Broadband expansion for telehealth, loan forgiveness for rural mental health professionals, and mobile crisis teams would help address structural barriers.
 
 5. **Address the caregiver access gap** — With 70.6% of families reporting difficulty and a 15.6-point gap above the national average, Washington would benefit from systemic reforms: shorter wait times, expanded telehealth, streamlined referral pathways, and family navigators to reduce the burden of accessing care.
 
 6. **Prioritize child maltreatment prevention in high-poverty counties** — Yakima, Ferry, and Okanogan should receive targeted family support services, as maltreatment rates track poverty at r = 0.90.
+
+7. **Address housing insecurity and food insecurity as mental health interventions** — The ML models identify housing insecurity as the single strongest national predictor of mental distress (Random Forest importance = 0.296, Logistic Regression food insecurity OR = 6.01). Programs that stabilize housing and reduce food insecurity may have downstream effects on mental health outcomes, particularly in the 14 WA counties classified as high-risk nationally.
+
+8. **Focus on the 14 high-risk WA counties identified by national ML benchmarking** — Whitman, Cowlitz, Grays Harbor, Adams, Clark, Pierce, Kittitas, Whatcom, Grant, Lewis, Yakima, Franklin, Spokane, and Ferry all exceed the national median for mental distress. These counties share health profiles with the most distressed counties in the country and should be prioritized for comprehensive intervention that addresses multiple co-occurring risk factors rather than single-issue programs.
 
 ---
 
@@ -318,10 +330,11 @@ This project was completed as part of a Spring 2026 internship with **Washington
 
 The analysis maps directly to WSCC's mission and operational needs:
 
-- **Geographic targeting** — The county-level maps and provider rankings identify where youth mental health services are most lacking, supporting WSCC's outreach resource allocation and grant applications.
-- **Risk segmentation** — The K-means clustering groups counties with similar access and risk profiles, providing one structured input for prioritization that aligns with how state agencies and nonprofits allocate intervention resources.
-- **Evidence-based advocacy** — The correlation analysis quantifies the associations between poverty, insurance coverage, provider access, youth sadness, and child maltreatment — the factors WSCC tracks when assessing whether programs are reaching the populations most at risk.
+- **Geographic targeting** — The county-level maps, provider rankings, and interactive national choropleth identify where youth mental health services are most lacking, supporting WSCC's outreach resource allocation and grant applications.
+- **Risk segmentation** — The K-means clustering (Phase 1) and hierarchical clustering (Phase 2) group counties with similar access and risk profiles at both state and national scale, providing structured inputs for prioritization that align with how state agencies and nonprofits allocate intervention resources.
+- **Evidence-based advocacy** — The correlation analysis quantifies associations between poverty, insurance coverage, provider access, youth sadness, and child maltreatment. The ML models go further by identifying housing insecurity and food insecurity as the strongest national predictors of mental distress — a finding that supports WSCC's cross-sector approach to health and social services.
 - **Caregiver access data** — The 70.6% caregiver difficulty finding from NSCH provides a powerful headline statistic for grant applications and advocacy materials, directly illustrating the access barriers WSCC works to reduce.
+- **National benchmarking** — The Phase 2 ML analysis places WA's 39 counties in a national context of 2,957 counties, allowing WSCC to argue that its target communities face challenges comparable to the most distressed counties in the country — a framing that strengthens federal grant applications.
 
 This project demonstrates the end-to-end data workflow involved in community health analytics: sourcing federal datasets, integrating multiple data streams at the county level, applying statistical and machine learning techniques, and producing outputs that directly support program planning.
 
@@ -383,6 +396,6 @@ python ML_Analysis.py
 
 © 2026 Waleed Adawi. All rights reserved.
 
-This project and its contents are shared for portfolio and educational purposes. Developed during a Spring 2026 internship with Washington State Community Connectors (WSCC). Data sourced from U.S. Census Bureau (ACS), HRSA, USDA, NSCH, YRBSS, BRFSS, and NCANDS — all publicly available federal datasets. See [`data/sources.md`](data/sources.md) for full citations.
+This project and its contents are shared for portfolio and educational purposes. Developed during a Spring 2026 internship with Washington State Community Connectors (WSCC). Data sourced from U.S. Census Bureau (ACS), HRSA, USDA, NSCH, YRBSS, BRFSS, NCANDS, and CDC PLACES — all publicly available federal datasets. See [`data/sources.md`](data/sources.md) for full citations.
 
 Licensed under the [MIT License](LICENSE).
