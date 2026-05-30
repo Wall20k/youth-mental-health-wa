@@ -1,10 +1,10 @@
 # Youth Mental Health Access Analysis — Washington State
 
-County-level analysis of youth mental health access gaps, provider shortages, and socioeconomic risk factors across all 39 Washington counties.
+County-level analysis of youth mental health access gaps, provider shortages, and socioeconomic risk factors across all 39 Washington counties — with national ML benchmarking across 2,957 U.S. counties.
 
 **Author:** Waleed Adawi · **Year:** 2026
 **Internship:** Washington State Community Connectors (WSCC) · Spring 2026
-**Stack:** Python 3 · pandas · NumPy · Matplotlib · Seaborn
+**Stack:** Python 3 · pandas · NumPy · Matplotlib · Seaborn · scikit-learn · SciPy
 
 ---
 
@@ -12,7 +12,7 @@ County-level analysis of youth mental health access gaps, provider shortages, an
 
 ### The Problem
 
-Rural and low-income communities in Washington State face disproportionate barriers to youth mental health care. Provider shortages, high uninsured rates among children, and poverty create compounding access gaps that vary dramatically from county to county.
+Rural and low-income communities in Washington State face disproportionate barriers to youth mental health care. Provider shortages, high uninsured rates among children, and poverty create compounding access gaps that vary dramatically from county to county. But descriptive analysis of 39 WA counties alone cannot answer a critical question: are the factors driving mental distress in Washington the same ones driving it nationally, and how do WA's counties compare to the rest of the country?
 
 ### Why It Matters
 
@@ -22,7 +22,7 @@ This project was developed during a Spring 2026 internship with Washington State
 
 ### Objective
 
-Quantify the relationships between socioeconomic indicators (income, poverty, insurance coverage), mental health outcomes (youth diagnosis rates, sadness prevalence, adult mental health burden, child maltreatment), and mental health provider availability at the county level. Identify the most underserved communities and classify counties into risk profiles using unsupervised clustering.
+This project has two phases. **Phase 1** quantifies the relationships between socioeconomic indicators (income, poverty, insurance coverage), mental health outcomes (youth diagnosis rates, sadness prevalence, adult mental health burden, child maltreatment), and mental health provider availability across WA's 39 counties using descriptive statistics, correlation analysis, and unsupervised clustering. **Phase 2** scales the analysis to 2,957 U.S. counties using five supervised and unsupervised ML models to identify which health indicators are the strongest national predictors of mental distress, and benchmarks WA's 39 counties against that national picture.
 
 ---
 
@@ -30,20 +30,21 @@ Quantify the relationships between socioeconomic indicators (income, poverty, in
 
 ### Approach
 
-This analysis uses a single self-contained Python script with all county-level data embedded directly. No external CSV files or databases are required — the data dictionary is built into `Code.py` for full reproducibility.
+**Phase 1 (WA County Analysis)** uses a single self-contained Python script (`Code.py`) with all county-level data embedded directly. No external CSV files or databases are required. The analytical pipeline includes descriptive statistics across all 39 counties, distribution analysis, rural vs. urban disparity comparisons, Pearson correlation analysis, a manually implemented K-means clustering algorithm (k=3, no scikit-learn) for risk profiling, and a hex cartogram for geographic visualization.
 
-The analytical pipeline includes descriptive statistics across all 39 counties, distribution analysis of key variables, rural vs. urban disparity comparisons, Pearson correlation analysis between all indicator pairs, a manually implemented K-means clustering algorithm (k=3, no scikit-learn) to classify counties into risk profiles, and a hex cartogram for geographic visualization.
+**Phase 2 (National ML Benchmarking)** uses a second script (`ML_Analysis.py`) that pulls county-level health data for ~3,000 U.S. counties from the CDC PLACES API, adds USDA rural/urban codes, and trains five ML models — Random Forest, Ridge/Lasso Regression, PCA, Hierarchical Clustering, and Logistic Regression — to identify the strongest national predictors of mental distress and contextualize WA's 39 counties within the national distribution.
 
 ### Tools
 
 | Tool | Purpose |
 |------|---------|
 | pandas | Data manipulation and summary statistics |
-| NumPy | Array operations and K-means implementation |
-| Matplotlib | All figure generation (11 outputs) |
-| Seaborn | Correlation heatmap styling |
-
-No external machine learning libraries (scikit-learn, scipy, etc.) are used. The K-means algorithm is implemented from scratch using NumPy for educational transparency.
+| NumPy | Array operations and from-scratch K-means |
+| Matplotlib / Seaborn | All figure generation (17 outputs) |
+| scikit-learn | Random Forest, Ridge, Lasso, Logistic Regression, PCA |
+| SciPy | Hierarchical clustering and dendrogram |
+| CDC PLACES API | National county-level health estimates (2,957 counties) |
+| Leaflet.js | Interactive choropleth map |
 
 ---
 
@@ -191,49 +192,73 @@ State-level survey data from NSCH (Indicator 4.4a, 2022–2023) reveals that **7
 
 10. **Youth MH prevalence.** State average of 20.8% of children 3-17 have an anxiety/depression diagnosis (NSCH), with Yakima (26.4%), Okanogan (25.2%), and Ferry (24.1%) highest.
 
+11. **Housing insecurity is the #1 national predictor of mental distress.** Random Forest trained on 2,957 counties identifies housing insecurity (importance = 0.296), obesity (0.210), and food insecurity (0.173) as the top three predictors — not insurance coverage or rural status. Lasso regression confirms: only housing insecurity, physical inactivity, and obesity survive variable selection.
+
+12. **36% of WA counties are high-risk by national standards.** Logistic regression classifies 14 of 39 WA counties above the national median for mental distress (17.2%). Whitman (20.9%), Cowlitz (18.7%), and Grays Harbor (18.4%) lead. Food insecurity has an odds ratio of 6.01 — a 1 SD increase makes a county 6x more likely to be classified high-risk.
+
+13. **WA is deteriorating more slowly than the nation.** Mental distress rose nationally by +2.63 pp from 2020 to 2023, but only +2.03 pp in WA. Depression rose +2.01 pp nationally while WA actually declined (−0.34 pp).
+
+14. **WA's internal disparities mirror national patterns.** Hierarchical clustering of 2,957 counties shows that Yakima and Adams share health profiles with the most distressed counties in the southeastern U.S., while King and San Juan cluster with the healthiest counties nationally.
+
 ---
 
 ## Machine Learning Analysis (National Context)
 
-To move beyond descriptive correlations (n = 39 WA counties), we scaled the analysis to 2,957 U.S. counties using CDC PLACES 2023 county-level health estimates and USDA RUCC rural/urban codes. Five ML models were trained on 8 county-level health indicators to predict mental distress rates nationally, with WA counties highlighted throughout.
+### Why ML?
+
+The Phase 1 analysis identified strong correlations between poverty, provider access, and youth mental health outcomes across WA's 39 counties — but with only 39 observations, it is impossible to determine which factors are genuinely predictive versus which are correlated by coincidence, shared demographics, or confounding. Correlation analysis also cannot rank predictors by importance, select the minimum set of indicators worth tracking, or tell us whether WA's patterns are unique or part of a national trend.
+
+Machine learning addresses all four limitations. By scaling to 2,957 U.S. counties, the models have enough statistical power to separate signal from noise. Random Forest and Lasso identify which indicators actually predict mental distress when all factors compete simultaneously. PCA reveals whether these indicators are measuring separate phenomena or a single underlying dimension. Hierarchical clustering shows whether WA's county groupings reflect national structure. And logistic regression quantifies the odds that each risk factor contributes to a county being classified as high-distress — with WA's 39 counties benchmarked against all 2,957.
 
 ### Data
 
-County-level BRFSS-based estimates from CDC PLACES (2023) for ~3,000 counties: mental distress, depression, uninsured rate, obesity, physical inactivity, diabetes, binge drinking, food insecurity, and housing insecurity. Longitudinal comparison using 2020 CDC PLACES data for trend analysis.
+County-level BRFSS-based estimates were pulled from the CDC PLACES API (2023 release) for 2,957 U.S. counties. Ten health indicators were collected: mental distress (frequent mental distress among adults, %), depression, uninsured rate, obesity, physical inactivity, diabetes, binge drinking, food insecurity, housing insecurity, and poor general health. USDA Rural-Urban Continuum Codes (2023) were joined for rural/urban classification. Longitudinal comparison data was pulled from the 2020 CDC PLACES release to measure county-level changes over time. Mental distress serves as the prediction target; the remaining indicators serve as predictors.
 
-### Models and Key Results
+### Models and Results
 
-**Random Forest** (R² = 0.479, 5-fold CV) — Housing insecurity is the strongest single predictor of county-level mental distress (importance = 0.296), followed by obesity (0.210) and food insecurity (0.173). Rural/urban status has near-zero importance once socioeconomic factors are controlled. WA counties rank below the national average on all three top predictors.
+#### 1. Random Forest — Feature Importance
+
+A Random Forest regressor (500 trees, max depth 10) was trained to predict county-level mental distress from 7 health indicators. The model explains 47.9% of the variance in mental distress across 2,957 counties (R² = 0.479, 5-fold cross-validation). The left panel ranks each predictor by how much it contributes to the model's accuracy. Housing insecurity dominates at 0.296 — nearly 1.5x more important than the second-ranked predictor (obesity, 0.210). Food insecurity (0.173) and physical inactivity (0.112) follow. Notably, uninsured rate (0.073) and diabetes (0.065) contribute relatively little once the top predictors are accounted for. The right panel shows where WA's 39 counties fall on each predictor relative to the national distribution. WA ranks at the 7th percentile for physical inactivity (20.7% vs national 28.4%) and 20th percentile for obesity (33.9% vs 37.4%), meaning WA counties are substantially healthier than most of the country on the factors that matter most.
 
 ![Random Forest](ml_outputs/ml_random_forest.png)
 
-**Ridge / Lasso Regression** — Lasso dropped 5 of 8 predictors and still outperformed Ridge (R² = 0.326 vs 0.291). The three surviving predictors — housing insecurity, physical inactivity, and obesity — carry most of the signal. WA scores below the national mean on all three (z-scores: −0.23, −1.40, −0.73), indicating relative advantage on the factors that matter most.
+#### 2. Ridge / Lasso Regression — Variable Selection
+
+Ridge and Lasso regression answer a different question than Random Forest: if you had to build a simple linear model to predict mental distress, which variables would you keep and which would you drop? Ridge keeps all predictors but shrinks their coefficients toward zero — positive coefficients mean that indicator is associated with higher distress, negative with lower. Lasso goes further by forcing weak predictors to exactly zero, effectively selecting a minimal set. Lasso dropped 5 of 7 predictors entirely (food insecurity, binge drinking, diabetes, uninsured) and still achieved a higher R² than Ridge (0.326 vs 0.291). The three survivors — housing insecurity, physical inactivity, and obesity — are sufficient to explain most of the linear relationship. The right panel shows WA's z-scores on those three factors: WA is 0.23 standard deviations below national average on housing insecurity, 1.40 below on physical inactivity, and 0.73 below on obesity. All negative — meaning WA has a relative advantage on every factor Lasso identified as important.
 
 ![Ridge vs Lasso](ml_outputs/ml_ridge_lasso.png)
 
-**PCA** — PC1 captures 56.9% of all variance across 10 health indicators, revealing that county-level health measures are largely driven by a single underlying "community health/deprivation" dimension. WA counties cluster in the healthier (left) portion of the PCA space, with Yakima and Ferry pulling rightward toward higher-risk profiles and King/San Juan on the far left.
+#### 3. PCA — Dimensionality Reduction
+
+PCA asks whether 10 health indicators are really measuring 10 different things, or whether they collapse into a smaller number of underlying dimensions. The answer: PC1 alone captures 56.9% of all variance, meaning more than half of the variation across 2,957 counties on 10 different health measures can be explained by a single "community health/deprivation" axis. Counties with high obesity also tend to have high physical inactivity, high food insecurity, high mental distress, and high diabetes — they move together because they reflect the same underlying county-level disadvantage. The left panel plots every county on PC1 vs PC2, with WA's 39 counties in orange. WA clusters in the healthier (left) portion of the space, but with meaningful internal spread: King and San Juan sit far left (healthiest profiles), while Yakima and Ferry pull rightward toward profiles shared by the most distressed counties nationally. Whitman is an outlier on PC2, likely driven by its unusual demographics as a college town. The scree plot on the right shows that 5 components capture 90% of all variation — the remaining 5 indicators add very little new information.
 
 ![PCA](ml_outputs/ml_pca.png)
 
-**Hierarchical Clustering** (Ward linkage, k = 4) — The dendrogram reveals a natural 4-cluster structure across U.S. counties. Most WA counties (26/39) fall in the lowest-distress cluster, but Yakima and Adams land in a higher-risk national cluster, confirming that WA's internal disparities mirror national patterns.
+#### 4. Hierarchical Clustering — National County Groupings
+
+While K-means (Phase 1) required choosing k upfront, hierarchical clustering builds a tree of all possible groupings and lets us see the natural structure. Ward linkage was applied to the first 3 principal components, and the dendrogram was cut at k = 4 clusters. The left panel shows the full dendrogram (truncated to the last 30 merges for readability). The right panel shows how WA's 39 counties distribute across the 4 national clusters, with every county named. The majority of WA counties (26/39) fall in Cluster 4, the lowest-distress group (15.4% average distress). A smaller group including Cowlitz, Ferry, Franklin, Grant, and Lewis lands in Cluster 3 (17.6% distress). Yakima and Adams fall into Cluster 2 (19.1% distress), sharing a profile with some of the most distressed counties in the southeastern U.S. No WA counties fall in Cluster 1 (18.4% distress, predominantly rural Southern counties). This confirms that WA's internal disparities are not unique — they mirror a national pattern where agricultural, rural, and high-poverty counties cluster together regardless of state.
 
 ![Dendrogram](ml_outputs/ml_dendrogram.png)
 
-**Logistic Regression** (74.9% accuracy, 5-fold CV) — Food insecurity has an odds ratio of 6.01 (per 1 SD increase → 6x higher odds of high mental distress). 14 of 39 WA counties (36%) are classified as high-risk against the national median threshold of 17.2%.
+#### 5. Logistic Regression — Risk Classification
+
+Logistic regression converts the continuous mental distress rate into a binary question: is a county above or below the national median (17.2%)? The model achieves 74.9% accuracy (5-fold CV). The left panel shows odds ratios for each predictor — a 1 standard deviation increase in food insecurity multiplies the odds of being classified high-risk by 6.01x. Physical inactivity (2.23x) and obesity (1.87x) follow. The right panel ranks all 39 WA counties by their mental distress rate and colors them by classification. 14 of 39 WA counties (36%) exceed the national median threshold: Whitman (20.9%), Cowlitz (18.7%), Grays Harbor (18.4%), Adams (18.3%), Clark (18.2%), Pierce (18.1%), Kittitas (18.0%), Whatcom (17.9%), Grant (17.8%), Lewis (17.8%), Yakima (17.8%), Franklin (17.8%), Spokane (17.5%), and Ferry (17.4%). The remaining 25 counties fall below the national median, with San Juan (13.0%), Jefferson (13.4%), and King (14.7%) at the lowest-risk end.
 
 ![Logistic Regression](ml_outputs/ml_logistic_regression.png)
 
-**Longitudinal Change (2020 → 2023)** — Mental distress rose nationally (+2.63 pp) but less in WA (+2.03 pp). Depression rose nationally (+2.01 pp) while WA declined (−0.34 pp). Uninsured rates dropped everywhere, but WA's decline (−2.89 pp) was smaller than the national average (−5.31 pp).
+#### 6. Longitudinal Change (2020 → 2023)
+
+County-level trends over three years reveal whether conditions are improving or worsening. Mental distress rose nationally by +2.63 percentage points, but WA's increase was smaller (+2.03 pp), suggesting WA is deteriorating more slowly than the national trend. Depression rose nationally by +2.01 pp, while WA actually declined by −0.34 pp — one of the few states where depression estimates improved over this period. Uninsured rates fell nationally by −5.31 pp (reflecting ACA marketplace expansion and pandemic-era Medicaid coverage), but WA's decline was smaller (−2.89 pp), likely because WA already had relatively low uninsured rates with less room to improve. The histograms show the full distribution of county-level changes with WA's average marked in yellow against the national average in red.
 
 ![Longitudinal Change](ml_outputs/ml_longitudinal_change.png)
 
 ### Interactive Map
 
-An interactive choropleth map of all 2,957 counties is available at [`ml_outputs/interactive_map.html`](ml_outputs/interactive_map.html). Toggle between the 3 Lasso-selected predictors, mental distress, and risk classification. WA counties are outlined in orange. Click any county for detailed health indicators and national comparisons.
+An interactive choropleth map of all 2,957 counties is available at [`ml_outputs/interactive_map.html`](ml_outputs/interactive_map.html). The map supports five toggleable layers: the 3 Lasso-selected predictors (housing insecurity, physical inactivity, obesity), mental distress, and risk classification. WA counties are outlined in orange. Hovering over any county displays a popup with all health indicators, population, risk classification, and comparisons to the national average. A stats bar at the top updates with WA vs. national comparison statistics for the active layer.
 
 ### ML Takeaway
 
-The ML models reframe the policy conversation: the strongest predictors of county-level mental distress are not insurance coverage or rural status — they are material conditions like housing insecurity, physical inactivity, and obesity. WA performs relatively well on these factors nationally, but its 14 high-risk counties (including Yakima, Cowlitz, Grays Harbor, Adams, and Whitman) share profiles with the most distressed counties in the country.
+The ML models answer a question that correlations alone cannot: what actually predicts mental distress when all factors compete? The answer reframes the conversation from "build more clinics" to "address the material conditions driving distress." Housing insecurity, physical inactivity, and obesity — not insurance coverage, not rural status — are the strongest predictors nationally. WA performs relatively well on all three, which explains why most WA counties (25/39) fall below the national distress median. But the 14 WA counties classified as high-risk share health profiles with the most distressed counties in the Deep South and Appalachia, suggesting that WA's internal disparities are driven by the same structural forces operating nationwide.
 
 ---
 
@@ -255,17 +280,33 @@ The ML models reframe the policy conversation: the strongest predictors of count
 
 ## Limitations
 
-This analysis is a county-level ecological study. All findings describe associations between aggregate county indicators and should not be interpreted as individual-level causation. A high county-level correlation between poverty and youth sadness, for example, does not mean that any individual child living in poverty will experience sadness — it means that counties with higher poverty rates tend to report higher sadness prevalence in aggregate.
+### General
 
-Correlation does not prove causation. The Pearson correlations reported throughout this analysis quantify the strength and direction of linear associations between county-level indicators. They do not establish that one variable causes changes in another. Unmeasured confounders, shared demographic structures, and the small sample size (n = 39 counties) can all influence correlation estimates. Very high correlations (r > 0.90) in particular should be interpreted as strong exploratory signals warranting further investigation, not as definitive proof of a mechanism.
+This analysis is a county-level ecological study. All findings — both correlational (Phase 1) and ML-based (Phase 2) — describe associations between aggregate county indicators and should not be interpreted as individual-level causation. A county with high food insecurity and high mental distress does not mean that food-insecure individuals in that county are experiencing distress; it means the county-level aggregates co-occur. This distinction (the ecological fallacy) applies to every finding in this project.
 
-Several of the youth mental health indicators used in this analysis are survey-based, modeled, or proxy-derived rather than direct county-level clinical measurements. NSCH and YRBSS data originate from state-level surveys and are allocated to counties using demographic weighting. BRFSS estimates are similarly survey-based. These allocation methods are standard in public health research but introduce estimation uncertainty that is not reflected in the correlation coefficients.
+### Phase 1 (WA County Analysis)
 
-The K-means clustering (k=3) is used as exploratory county segmentation to identify groups with similar access and risk profiles. It is not a predictive model and should not be treated as one. The cluster assignments are sensitive to the choice of k, the variables included, and the random seed. They are useful for structuring discussion about which counties share similar characteristics, but they should be validated against local program data and expert knowledge before being used to guide funding or policy decisions.
+Correlation does not prove causation. The Pearson correlations quantify linear associations between county-level indicators but do not establish that one variable causes changes in another. Unmeasured confounders, shared demographic structures, and the small sample size (n = 39 counties) can all inflate or deflect correlation estimates. Very high correlations (r > 0.90) should be interpreted as strong exploratory signals, not definitive proof of a mechanism.
 
-The caregiver access finding (70.6% reporting difficulty) comes from the NSCH, a nationally representative caregiver-reported survey. Survey-based measures may reflect reporting bias — caregivers who are more engaged with the health system may be more likely to respond — and the state-level estimate carries a margin of error not shown in the figure.
+Several indicators are survey-based, modeled, or proxy-derived rather than direct county-level clinical measurements. NSCH and YRBSS data originate from state-level surveys and are allocated to counties using demographic weighting. BRFSS estimates are similarly survey-based. These allocation methods are standard in public health research but introduce estimation uncertainty not reflected in the correlation coefficients.
 
-The ML models (Random Forest, Ridge/Lasso, PCA, Hierarchical Clustering, Logistic Regression) were trained on CDC PLACES 2023 county-level estimates derived from BRFSS, which are themselves modeled from survey data — not direct measurements. The models explain 29–48% of variance in mental distress (R² = 0.291–0.479), meaning more than half of county-level variation is driven by factors not captured in these 8 predictors. Feature importance rankings describe predictive power within this specific model and dataset, not causal mechanisms. The Lasso variable selection is sensitive to the regularization parameter and should be interpreted as identifying the most predictive subset, not the only relevant factors.
+The K-means clustering (k=3) is exploratory county segmentation. It is not a predictive model. Cluster assignments are sensitive to the choice of k, the variables included, and the random seed. They should be validated against local program data before guiding decisions.
+
+The caregiver access finding (70.6% reporting difficulty) comes from the NSCH, a nationally representative caregiver-reported survey. Survey-based measures may reflect reporting bias, and the state-level estimate carries a margin of error not shown in the figure.
+
+### Phase 2 (National ML Models)
+
+The ML models were trained on CDC PLACES 2023 county-level estimates derived from BRFSS, which are themselves modeled from survey data — not direct clinical measurements. The models predict a BRFSS-derived estimate of mental distress, not a clinical prevalence rate. Any systematic bias in the BRFSS estimation methodology will propagate into the ML results.
+
+The models explain 29–48% of variance in mental distress (R² = 0.291–0.479), meaning more than half of county-level variation is driven by factors not captured in these predictors. Missing variables likely include income, poverty rate, provider density, substance use rates, and demographic composition — all of which were available in the Phase 1 WA analysis but not accessible nationally through the CDC PLACES API without a Census API key.
+
+Feature importance rankings (Random Forest) describe predictive power within this specific model and dataset, not causal mechanisms. A variable can be important for prediction without being a cause of distress. Lasso variable selection is sensitive to the regularization parameter (alpha = 0.1); different alpha values could retain different subsets of predictors. The three surviving variables (housing insecurity, physical inactivity, obesity) should be interpreted as the most predictive subset at this regularization level, not the only relevant factors.
+
+The logistic regression's 74.9% accuracy and the "14/39 WA counties classified high-risk" finding depend on the national median (17.2%) as the binary threshold. A different threshold would change the classification. The 17.2% cutoff is descriptive (half of counties above, half below), not a clinical or policy-relevant boundary.
+
+The longitudinal comparison (2020 → 2023) uses two different CDC PLACES releases with potentially different BRFSS estimation methodologies. Year-to-year changes should be interpreted as approximate trends, not precise measurements of change.
+
+### Intended Use
 
 This analysis is intended to support needs assessment, outreach planning, and resource prioritization. It is not intended for clinical diagnosis, individual-level inference, or definitive policy prescription. The findings are strongest when used alongside local expertise, program-level data, and community input.
 
