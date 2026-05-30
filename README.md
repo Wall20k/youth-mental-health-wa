@@ -73,9 +73,7 @@ Cross-validation / state-level context (not direct county variables):
 | SAMHSA NSDUH (2022-2023) | Contextual state-level prevalence benchmarks |
 | MHA (Mental Health America) State Rankings | State-level context on WA's overall MH landscape |
 
-**Phase 2** — County-level BRFSS-based estimates were pulled from the CDC PLACES API (2023 release) for 2,957 U.S. counties: mental distress, depression, uninsured rate, obesity, physical inactivity, diabetes, binge drinking, food insecurity, housing insecurity, and poor general health. USDA RUCC codes (2023) were joined for rural/urban classification. Longitudinal comparison data was pulled from the 2020 CDC PLACES release for trend analysis.
-
-### Variables (Phase 1)
+### Phase 1 Variables (WA — 39 Counties, 12 Variables)
 
 | Variable | Description | Source |
 |----------|-------------|--------|
@@ -91,6 +89,29 @@ Cross-validation / state-level context (not direct county variables):
 | `Youth_Sadness_Pct` | % of high schoolers with persistent sadness/hopelessness (2+ weeks) | YRBSS |
 | `Adult_MH_Days` | Avg mentally unhealthy days in past 30 days, adults | BRFSS |
 | `Child_Maltreatment_per1K` | Child maltreatment victims per 1,000 children | NCANDS |
+
+### Phase 2 Data Sources (National — 2,957 Counties)
+
+| Source | Dataset / API | Variables |
+|--------|--------------|-----------|
+| CDC PLACES (2023 release) | BRFSS-based county estimates | Mental distress, depression, uninsured rate, obesity, physical inactivity, diabetes, binge drinking, food insecurity, housing insecurity, poor general health |
+| CDC PLACES (2020 release) | BRFSS-based county estimates | Mental distress, depression, uninsured rate (longitudinal comparison) |
+| USDA Rural-Urban Continuum Codes (2023) | RUCC | Metro/non-metro county classification |
+
+### Phase 2 Variables (National — 2,957 Counties, 10 Variables)
+
+| Variable | Role | Description | Source |
+|----------|------|-------------|--------|
+| `mental_distress_pct` | **Target** | % of adults with frequent mental distress (14+ days/month) | CDC PLACES (BRFSS) |
+| `depression_pct` | Excluded | % of adults ever diagnosed with depression (too correlated with target) | CDC PLACES (BRFSS) |
+| `housing_insecurity_pct` | Predictor | % of adults experiencing housing insecurity | CDC PLACES (BRFSS) |
+| `physical_inactivity_pct` | Predictor | % of adults with no leisure-time physical activity | CDC PLACES (BRFSS) |
+| `obesity_pct` | Predictor | % of adults with BMI ≥ 30 | CDC PLACES (BRFSS) |
+| `food_insecurity_pct` | Predictor | % of adults experiencing food insecurity | CDC PLACES (BRFSS) |
+| `uninsured_pct` | Predictor | % of adults without health insurance | CDC PLACES (BRFSS) |
+| `diabetes_pct` | Predictor | % of adults ever diagnosed with diabetes | CDC PLACES (BRFSS) |
+| `binge_drinking_pct` | Predictor | % of adults reporting binge drinking | CDC PLACES (BRFSS) |
+| `poor_health_pct` | Used in PCA | % of adults reporting fair or poor general health | CDC PLACES (BRFSS) |
 
 ### Data Evaluation
 
